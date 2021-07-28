@@ -37,7 +37,7 @@ func (s *Service) IssueCommission(from, to bool, percentage float64, minAmount i
 	s.Commission = append(s.Commission, commission)
 }
 
-func (s *Service) Card2Card(from string, to string, amount int64) (total int64, ok bool, err error) {
+func (s *Service) Card2Card(from string, to string, amount int64) (total int64, err error) {
 	fromCard := s.CardSvc.SearchByNumber(from)
 	fromBool := fromCard != nil
 	toCard := s.CardSvc.SearchByNumber(to)
@@ -57,26 +57,28 @@ func (s *Service) Card2Card(from string, to string, amount int64) (total int64, 
 	}
 
 	total = amount + sumCommission
-	if (!fromBool && !toBool) || !fromBool {
-		ok = true
+	if !fromBool && !toBool {
+		return total, nil
 	}
 
-	if fromBool {
-		newBalance := fromCard.Balance - total
-		if newBalance >= 0 {
-			fromCard.Balance = newBalance
-			ok = true
-		} else {
-			ok = false
-			err = ErrNotEnoughFundsAccount
-		}
-	}
-
-	if toBool {
+	if !fromBool && toBool {
 		toCard.Balance += amount
+		return total, nil
 	}
 
-	return total, ok, err
+	newBalance := fromCard.Balance - total
+	if toBool && newBalance > 0 {
+		fromCard.Balance = newBalance
+		toCard.Balance += amount
+		return total, nil
+	}
+
+	if !toBool && newBalance > 0 {
+		fromCard.Balance = newBalance
+		return total, nil
+	}
+
+	return total, ErrNotEnoughFundsAccount
 }
 
 func (s *Service) searchCommission(from bool, to bool) *Commission {

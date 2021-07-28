@@ -136,16 +136,13 @@ func TestService_Card2Card(t *testing.T) {
 				CardSvc:    tt.fields.CardSvc,
 				Commission: tt.fields.Commission,
 			}
-			gotTotal, gotOk, gotErr := s.Card2Card(tt.args.from, tt.args.to, tt.args.amount)
+			gotTotal, gotErr := s.Card2Card(tt.args.from, tt.args.to, tt.args.amount)
 			if gotErr != tt.wantErr {
 				t.Errorf("Card2Card() error = %v, wantErr %v", gotErr, tt.wantErr)
 				return
 			}
 			if gotTotal != tt.wantTotal {
 				t.Errorf("Card2Card() gotTotal = %v, want %v", gotTotal, tt.wantTotal)
-			}
-			if gotOk != tt.wantOk {
-				t.Errorf("Card2Card() gotOk = %v, want %v", gotOk, tt.wantOk)
 			}
 		})
 	}
